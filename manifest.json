@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Easy Todo",
+  "version": "1.0",
+  "description": "A simple todo list extension",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "optional_permissions": [],
+  "host_permissions": [],
+  "icons": {
+    "16": "assets/icons/icon.svg",
+    "32": "assets/icons/icon.svg",
+    "48": "assets/icons/icon.svg",
+    "128": "assets/icons/icon.svg"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon.svg",
+      "48": "assets/icons/icon.svg",
+      "128": "assets/icons/icon.svg"
+    }
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module",
+    "persisted": true
+  }
+}

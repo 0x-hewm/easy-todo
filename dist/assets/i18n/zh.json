@@ -1,0 +1,87 @@
+{
+  "app": {
+    "title": "Easy Todo",
+    "addTodo": "添加",
+    "placeholder": "添加新的待办事项..."
+  },
+  "filters": {
+    "all": "全部",
+    "active": "进行中",
+    "completed": "已完成",
+    "priority": {
+      "title": "优先级",
+      "all": "全部优先级",
+      "high": "高",
+      "medium": "中",
+      "low": "低"
+    },
+    "search": "搜索..."
+  },
+  "tags": {
+    "title": "标签",
+    "add": "添加标签",
+    "placeholder": "输入新标签名称...",
+    "empty": "暂无标签",
+    "delete": "删除标签",
+    "deleteConfirm": "确定要删除这个标签吗？",
+    "exists": "标签已存在",
+    "createSuccess": "标签创建成功",
+    "createError": "创建标签失败",
+    "deleteSuccess": "标签删除成功",
+    "deleteError": "删除标签失败"
+  },
+  "todo": {
+    "delete": "删除",
+    "edit": "编辑",
+    "save": "保存",
+    "cancel": "取消",
+    "markComplete": "标记为已完成",
+    "markIncomplete": "标记为未完成",
+    "title": "标题",
+    "description": "描述（可选）",
+    "priority": "优先级",
+    "dueDate": "截止日期（可选）",
+    "tags": "标签",
+    "createSuccess": "任务创建成功",
+    "updateSuccess": "任务更新成功",
+    "deleteSuccess": "任务删除成功",
+    "createError": "创建任务失败",
+    "updateError": "更新任务失败",
+    "deleteError": "删除任务失败"
+  },
+  "stats": {
+    "total": "总计",
+    "active": "进行中",
+    "completed": "已完成",
+    "completionRate": "完成率"
+  },
+  "notifications": {
+    "reminder": "待办事项提醒",
+    "completion": "任务完成",
+    "reminderMessage": "该完成 \"{title}\" 了！",
+    "completionMessage": "恭喜！你完成了 \"{title}\""
+  },
+  "data": {
+    "export": "导出数据",
+    "import": "导入数据",
+    "importSuccess": "数据导入成功",
+    "importError": "数据导入失败",
+    "exportSuccess": "数据导出成功",
+    "exportError": "数据导出失败"
+  },
+  "shortcuts": {
+    "title": "键盘快捷键",
+    "newTodo": "新建任务",
+    "search": "搜索",
+    "save": "保存",
+    "toggleTheme": "切换主题",
+    "toggleFilter": "切换过滤器",
+    "exportData": "导出数据",
+    "importData": "导入数据"
+  },
+  "menu": {
+    "theme": "切换主题",
+    "import": "导入数据",
+    "export": "导出数据"
+  }
+}

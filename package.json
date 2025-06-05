@@ -1,0 +1,32 @@
+{
+  "name": "easy-todo",
+  "version": "1.0.0",
+  "description": "一个简单的待办事项 Chrome 扩展",
+  "main": "dist/popup.js",
+  "scripts": {
+    "build": "cross-env NODE_ENV=production node scripts/build.js",
+    "dev": "cross-env NODE_ENV=development webpack --watch --config webpack.config.js",
+    "clean": "rm -rf dist/* && rm -f easy-todo.zip",
+    "package": "npm run build"
+  },
+  "keywords": [
+    "chrome-extension",
+    "todo",
+    "typescript"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/chrome": "^0.0.254",
+    "@types/node": "^20.11.24",
+    "copy-webpack-plugin": "^12.0.2",
+    "cross-env": "^7.0.3",
+    "css-loader": "^6.11.0",
+    "style-loader": "^3.3.4",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
+  }
+}
