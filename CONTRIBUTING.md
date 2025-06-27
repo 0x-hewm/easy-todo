@@ -8,7 +8,7 @@
 
 ### 前置要求
 
-- Node.js 16+
+- Node.js 20+
 - npm 或 yarn
 - Chrome 浏览器 88+
 

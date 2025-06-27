@@ -936,8 +936,12 @@ class TaskForm extends HTMLElement {
             return;
         const now = new Date();
         const minDateTime = now.toISOString().slice(0, 16);
-        const formTitle = this.currentTodoId ? this.i18n.t('todo.edit') : this.i18n.t('todo.add');
-        const saveButtonText = this.currentTodoId ? this.i18n.t('todo.save') : this.i18n.t('todo.add');
+        const formTitle = this.currentTodoId
+            ? this.i18n.t('todo.edit')
+            : this.i18n.t('todo.add');
+        const saveButtonText = this.currentTodoId
+            ? this.i18n.t('todo.save')
+            : this.i18n.t('todo.add');
         const style = `
       <style>
         :host {
@@ -1186,19 +1190,21 @@ class TaskForm extends HTMLElement {
             tagList.innerHTML = '<div class="empty-message">暂无可用标签</div>';
             return;
         }
-        tagList.innerHTML = this.tags.map(tag => `
+        tagList.innerHTML = this.tags
+            .map(tag => `
       <div class="tag-item ${this.selectedTagIds.includes(tag.id) ? 'selected' : ''}"
            data-tag-id="${tag.id}"
            style="background-color: ${tag.color}; color: white;">
         ${tag.name}
       </div>
-    `).join('');
+    `)
+            .join('');
         this.setupTagListeners();
     }
     setupListeners() {
         if (!this.form)
             return;
-        this.form.addEventListener('submit', (e) => {
+        this.form.addEventListener('submit', e => {
             e.preventDefault();
             const formData = new FormData(this.form);
             const title = formData.get('title');
@@ -1217,7 +1223,11 @@ class TaskForm extends HTMLElement {
                     }
                     const [year, month, day] = datePart.split('-').map(Number);
                     const [hours, minutes] = timePart.split(':').map(Number);
-                    if (!year || !month || !day || hours === undefined || minutes === undefined) {
+                    if (!year ||
+                        !month ||
+                        !day ||
+                        hours === undefined ||
+                        minutes === undefined) {
                         alert('日期或时间格式无效');
                         return;
                     }
@@ -1248,12 +1258,12 @@ class TaskForm extends HTMLElement {
                 priority: formData.get('priority') || 'medium',
                 dueDate: dueDateTimestamp,
                 tags: this.selectedTagIds,
-                reminderLeadTime
+                reminderLeadTime,
             };
             const event = new CustomEvent('todoSubmit', {
                 detail: todo,
                 bubbles: true,
-                composed: true
+                composed: true,
             });
             this.dispatchEvent(event);
         });
@@ -1261,7 +1271,7 @@ class TaskForm extends HTMLElement {
         cancelBtn === null || cancelBtn === void 0 ? void 0 : cancelBtn.addEventListener('click', () => {
             const event = new CustomEvent('formCancel', {
                 bubbles: true,
-                composed: true
+                composed: true,
             });
             this.dispatchEvent(event);
         });
@@ -1274,12 +1284,12 @@ class TaskForm extends HTMLElement {
                 description: formData.get('description'),
                 tags: this.selectedTagIds,
                 dueDate: formData.get('dueDate'),
-                reminderLeadTime: this.getReminderTime(formData)
+                reminderLeadTime: this.getReminderTime(formData),
             };
             const event = new CustomEvent('formDataResponse', {
                 detail: todoData,
                 bubbles: true,
-                composed: true
+                composed: true,
             });
             this.dispatchEvent(event);
         });
@@ -1289,22 +1299,30 @@ class TaskForm extends HTMLElement {
         if (!reminderType || reminderType === 'none')
             return undefined;
         switch (reminderType) {
-            case 'atTime': return 0;
-            case '15min': return 15;
-            case '30min': return 30;
-            case '1hour': return 60;
-            case '2hours': return 120;
-            case '1day': return 1440;
+            case 'atTime':
+                return 0;
+            case '15min':
+                return 15;
+            case '30min':
+                return 30;
+            case '1hour':
+                return 60;
+            case '2hours':
+                return 120;
+            case '1day':
+                return 1440;
             case 'custom':
                 const customMinutes = formData.get('customMinutes');
-                return customMinutes ? parseInt(customMinutes, 10) : undefined;
+                return customMinutes
+                    ? parseInt(customMinutes, 10)
+                    : undefined;
             default:
                 return undefined;
         }
     }
     setupTagListeners() {
         this.shadowRoot.querySelectorAll('.tag-item').forEach(tag => {
-            tag.addEventListener('click', (e) => {
+            tag.addEventListener('click', e => {
                 const tagId = e.currentTarget.dataset.tagId;
                 if (!tagId)
                     return;
@@ -1319,7 +1337,7 @@ class TaskForm extends HTMLElement {
                 const event = new CustomEvent('tagsChange', {
                     detail: { selectedTags: this.selectedTagIds },
                     bubbles: true,
-                    composed: true
+                    composed: true,
                 });
                 this.dispatchEvent(event);
             });
@@ -1369,8 +1387,12 @@ class TaskForm extends HTMLElement {
         }
         const formTitle = this.shadowRoot.querySelector('.form-title');
         const submitBtn = this.form.querySelector('.submit-btn');
-        formTitle.textContent = this.currentTodoId ? this.i18n.t('todo.edit') : this.i18n.t('todo.add');
-        submitBtn.textContent = this.currentTodoId ? this.i18n.t('todo.save') : this.i18n.t('todo.add');
+        formTitle.textContent = this.currentTodoId
+            ? this.i18n.t('todo.edit')
+            : this.i18n.t('todo.add');
+        submitBtn.textContent = this.currentTodoId
+            ? this.i18n.t('todo.save')
+            : this.i18n.t('todo.add');
     }
     reset() {
         if (!this.form)
