@@ -1,9 +1,16 @@
 name: CI/CD
+
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+  pull-requests: write
 
 jobs:
   build:
@@ -157,21 +164,61 @@ jobs:
       - name: Build for release
         run: npm run build
 
+      - name: Debug token permissions
+        run: |
+          echo "Checking GitHub token permissions..."
+          echo "Repository: ${{ github.repository }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "Actor: ${{ github.actor }}"
+
+      - name: Get package version
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Check if release exists
+        id: check-release
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/v${{ steps.package-version.outputs.version }}"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Release v${{ steps.package-version.outputs.version }} already exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Release v${{ steps.package-version.outputs.version }} does not exist"
+          fi
+
       - name: Create release
-        uses: softprops/action-gh-release@v1
-        if: contains(github.event.head_commit.message, 'release:')
+        uses: softprops/action-gh-release@v2
+        if: contains(github.event.head_commit.message, 'release:') && steps.check-release.outputs.exists == 'false'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.run_number }}
-          name: Release v${{ github.run_number }}
+          tag_name: v${{ steps.package-version.outputs.version }}
+          name: Release v${{ steps.package-version.outputs.version }}
           body: |
-            Automated release from main branch
+            🚀 **Easy Todo Chrome Extension v${{ steps.package-version.outputs.version }}**
 
-            Changes in this release:
+            **Release Notes:**
             ${{ github.event.head_commit.message }}
+
+            **Download:**
+            - `easy-todo-v${{ steps.package-version.outputs.version }}.zip` - Chrome Web Store 发布包
+            - `easy-todo.zip` - 通用发布包
+
+            **Installation:**
+            1. 下载 ZIP 文件
+            2. 解压到本地目录
+            3. 在 Chrome 中打开 `chrome://extensions/`
+            4. 启用"开发者模式"
+            5. 点击"加载已解压的扩展程序"
+            6. 选择解压后的目录
+
+            ---
+            *自动发布于: ${{ github.run_id }}*
           draft: false
           prerelease: false
           files: |
             easy-todo-v*.zip
-            dist/**/*
+            easy-todo.zip
+          generate_release_notes: true
+          make_latest: true
