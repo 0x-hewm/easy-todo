@@ -1,0 +1,98 @@
+#!/bin/sh
+# Git pre-commit hook for Easy Todo project
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if this is the initial commit
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+    against=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    against=$(git hash-object -t tree /dev/null)
+fi
+
+# Redirect output to stderr
+exec 1>&2
+
+# Check for TypeScript compilation errors
+echo "📝 Checking TypeScript compilation..."
+if ! npx tsc --noEmit; then
+    echo "❌ TypeScript compilation failed. Please fix the errors and try again."
+    exit 1
+fi
+
+# Check for TODO/FIXME comments in staged files
+echo "🔍 Checking for TODO/FIXME comments..."
+staged_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|js|tsx|jsx)$')
+if [ -n "$staged_files" ]; then
+    if echo "$staged_files" | xargs grep -l "TODO\|FIXME" 2>/dev/null; then
+        echo "⚠️  Warning: Found TODO/FIXME comments in staged files:"
+        echo "$staged_files" | xargs grep -n "TODO\|FIXME" 2>/dev/null || true
+        echo "💡 Consider resolving these before committing."
+        # Don't fail, just warn
+    fi
+fi
+
+# Check for console.log statements
+echo "🔍 Checking for console.log statements..."
+if [ -n "$staged_files" ]; then
+    if echo "$staged_files" | xargs grep -l "console\.log" 2>/dev/null; then
+        echo "⚠️  Warning: Found console.log statements in staged files:"
+        echo "$staged_files" | xargs grep -n "console\.log" 2>/dev/null || true
+        echo "💡 Consider removing or replacing with proper logging."
+        # Don't fail, just warn
+    fi
+fi
+
+# Check for sensitive information
+echo "🔒 Checking for sensitive information..."
+if [ -n "$staged_files" ]; then
+    sensitive_patterns="password\|secret\|token\|api_key\|private_key"
+    if echo "$staged_files" | xargs grep -i "$sensitive_patterns" 2>/dev/null | grep -v "\.d\.ts"; then
+        echo "🚨 Error: Potential sensitive information found in staged files!"
+        echo "Please review and remove any sensitive data before committing."
+        exit 1
+    fi
+fi
+
+# Check manifest.json version if modified
+if git diff --cached --name-only | grep -q "src/manifest.json\|package.json"; then
+    echo "📦 Checking version consistency..."
+    
+    if [ -f "package.json" ] && [ -f "src/manifest.json" ]; then
+        package_version=$(node -pe "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")
+        manifest_version=$(node -pe "JSON.parse(require('fs').readFileSync('src/manifest.json', 'utf8')).version")
+        
+        if [ "$package_version" != "$manifest_version" ]; then
+            echo "❌ Version mismatch between package.json ($package_version) and manifest.json ($manifest_version)"
+            echo "💡 Please ensure both files have the same version number."
+            exit 1
+        fi
+    fi
+fi
+
+# Check for large files
+echo "📊 Checking file sizes..."
+large_files=$(git diff --cached --name-only | xargs ls -la 2>/dev/null | awk '$5 > 1048576 {print $9 " (" $5 " bytes)"}')
+if [ -n "$large_files" ]; then
+    echo "⚠️  Warning: Large files found:"
+    echo "$large_files"
+    echo "💡 Consider if these files should be tracked in git."
+fi
+
+# Validate JSON files
+echo "🔧 Validating JSON files..."
+json_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.json$')
+if [ -n "$json_files" ]; then
+    for file in $json_files; do
+        if [ -f "$file" ]; then
+            if ! node -e "JSON.parse(require('fs').readFileSync('$file', 'utf8'))" 2>/dev/null; then
+                echo "❌ Invalid JSON syntax in: $file"
+                exit 1
+            fi
+        fi
+    done
+fi
+
+echo "✅ Pre-commit checks passed!"

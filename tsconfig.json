@@ -10,13 +10,13 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src",
     "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     },
     "lib": ["dom", "es2017", "webworker"],
+    "isolatedModules": true,
     "typeRoots": [
       "./node_modules/@types",
       "./src/types"
@@ -24,7 +24,8 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    "tests/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

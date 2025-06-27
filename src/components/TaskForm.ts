@@ -1,12 +1,12 @@
-import { Todo, TagInfo } from '../types';
 import { TagService } from '../services/TagService';
+import { TagInfo, Todo } from '../types';
 import { I18n } from '../utils/i18n';
 
 export class TaskForm extends HTMLElement {
   private form: HTMLFormElement | null = null;
-  private tags: TagInfo[] = []; 
+  private tags: TagInfo[] = [];
   private selectedTagIds: string[] = [];
-  private currentTodoId: string | null = null; 
+  private currentTodoId: string | null = null;
   private i18n = I18n.getInstance();
 
   constructor() {
@@ -30,13 +30,17 @@ export class TaskForm extends HTMLElement {
 
   private render() {
     if (!this.shadowRoot) return;
-    
+
     const now = new Date();
     const minDateTime = now.toISOString().slice(0, 16);
-    
-    const formTitle = this.currentTodoId ? this.i18n.t('todo.edit') : this.i18n.t('todo.add');
-    const saveButtonText = this.currentTodoId ? this.i18n.t('todo.save') : this.i18n.t('todo.add');
-    
+
+    const formTitle = this.currentTodoId
+      ? this.i18n.t('todo.edit')
+      : this.i18n.t('todo.add');
+    const saveButtonText = this.currentTodoId
+      ? this.i18n.t('todo.save')
+      : this.i18n.t('todo.add');
+
     const style = `
       <style>
         :host {
@@ -214,7 +218,7 @@ export class TaskForm extends HTMLElement {
         }
       </style>
     `;
-    
+
     this.shadowRoot.innerHTML = `
       ${style}
       <form class="task-form" novalidate>
@@ -269,14 +273,18 @@ export class TaskForm extends HTMLElement {
         </div>
       </form>
     `;
-    
+
     this.renderTags();
     this.form = this.shadowRoot.querySelector('form');
-    const reminderSelect = this.shadowRoot.querySelector('#reminderTime') as HTMLSelectElement;
-    const customReminderInput = this.shadowRoot.querySelector('#customReminderInput') as HTMLDivElement;
-    
+    const reminderSelect = this.shadowRoot.querySelector(
+      '#reminderTime'
+    ) as HTMLSelectElement;
+    const customReminderInput = this.shadowRoot.querySelector(
+      '#customReminderInput'
+    ) as HTMLDivElement;
+
     reminderSelect.addEventListener('change', () => {
-      customReminderInput.style.display = 
+      customReminderInput.style.display =
         reminderSelect.value === 'custom' ? 'block' : 'none';
     });
   }
@@ -284,39 +292,43 @@ export class TaskForm extends HTMLElement {
   private async renderTags() {
     const tagList = this.shadowRoot!.querySelector('#tagList');
     if (!tagList) return;
-    
+
     if (this.tags.length === 0) {
       tagList.innerHTML = '<div class="empty-message">暂无可用标签</div>';
       return;
     }
-    
-    tagList.innerHTML = this.tags.map(tag => `
+
+    tagList.innerHTML = this.tags
+      .map(
+        tag => `
       <div class="tag-item ${this.selectedTagIds.includes(tag.id) ? 'selected' : ''}"
            data-tag-id="${tag.id}"
            style="background-color: ${tag.color}; color: white;">
         ${tag.name}
       </div>
-    `).join('');
-    
+    `
+      )
+      .join('');
+
     this.setupTagListeners();
   }
 
   private setupListeners() {
     if (!this.form) return;
-    
-    this.form.addEventListener('submit', (e) => {
+
+    this.form.addEventListener('submit', e => {
       e.preventDefault();
       const formData = new FormData(this.form!);
       const title = formData.get('title') as string;
-      
+
       if (!title.trim()) {
         alert('标题不能为空');
         return;
       }
-      
+
       const dueDate = formData.get('dueDate') as string;
       let dueDateTimestamp: number | undefined = undefined;
-      
+
       if (dueDate) {
         try {
           const [datePart, timePart] = dueDate.split('T');
@@ -324,23 +336,29 @@ export class TaskForm extends HTMLElement {
             alert('日期格式无效');
             return;
           }
-          
+
           const [year, month, day] = datePart.split('-').map(Number);
           const [hours, minutes] = timePart.split(':').map(Number);
-          
-          if (!year || !month || !day || hours === undefined || minutes === undefined) {
+
+          if (
+            !year ||
+            !month ||
+            !day ||
+            hours === undefined ||
+            minutes === undefined
+          ) {
             alert('日期或时间格式无效');
             return;
           }
-          
+
           const selectedDate = new Date(year, month - 1, day, hours, minutes);
           const now = Date.now();
-          
+
           if (selectedDate.getTime() < now) {
             alert('截止时间不能早于当前时间');
             return;
           }
-          
+
           dueDateTimestamp = selectedDate.getTime();
         } catch (error) {
           console.error('日期解析错误:', error);
@@ -348,57 +366,59 @@ export class TaskForm extends HTMLElement {
           return;
         }
       }
-      
+
       // 确保选中提醒时间时，截止日期也已设置
-      let reminderLeadTime: number | undefined = this.getReminderTime(formData);
+      const reminderLeadTime: number | undefined =
+        this.getReminderTime(formData);
       if (reminderLeadTime !== undefined && dueDateTimestamp === undefined) {
         alert('设置提醒时必须设置截止时间');
         return;
       }
-      
+
       const todo = {
         id: this.currentTodoId || undefined,
         title: title.trim(),
-        description: (formData.get('description') as string || '').trim(),
-        priority: formData.get('priority') as 'low' | 'medium' | 'high' || 'medium',
+        description: ((formData.get('description') as string) || '').trim(),
+        priority:
+          (formData.get('priority') as 'low' | 'medium' | 'high') || 'medium',
         dueDate: dueDateTimestamp,
         tags: this.selectedTagIds,
-        reminderLeadTime
+        reminderLeadTime,
       };
-      
+
       const event = new CustomEvent('todoSubmit', {
         detail: todo,
         bubbles: true,
-        composed: true
+        composed: true,
       });
       this.dispatchEvent(event);
     });
-    
+
     const cancelBtn = this.shadowRoot!.querySelector('.cancel-btn');
     cancelBtn?.addEventListener('click', () => {
       const event = new CustomEvent('formCancel', {
         bubbles: true,
-        composed: true
+        composed: true,
       });
       this.dispatchEvent(event);
     });
-    
+
     this.addEventListener('requestFormData', () => {
       if (!this.form) return;
-      
+
       const formData = new FormData(this.form);
       const todoData = {
         title: formData.get('title') as string,
         description: formData.get('description') as string,
         tags: this.selectedTagIds,
         dueDate: formData.get('dueDate') as string,
-        reminderLeadTime: this.getReminderTime(formData)
+        reminderLeadTime: this.getReminderTime(formData),
       };
-      
+
       const event = new CustomEvent('formDataResponse', {
         detail: todoData,
         bubbles: true,
-        composed: true
+        composed: true,
       });
       this.dispatchEvent(event);
     });
@@ -406,19 +426,27 @@ export class TaskForm extends HTMLElement {
 
   private getReminderTime(formData: FormData): number | undefined {
     const reminderType = formData.get('reminderType') as string;
-    
+
     if (!reminderType || reminderType === 'none') return undefined;
-    
+
     switch (reminderType) {
-      case 'atTime': return 0;
-      case '15min': return 15;
-      case '30min': return 30;
-      case '1hour': return 60;
-      case '2hours': return 120;
-      case '1day': return 1440;
+      case 'atTime':
+        return 0;
+      case '15min':
+        return 15;
+      case '30min':
+        return 30;
+      case '1hour':
+        return 60;
+      case '2hours':
+        return 120;
+      case '1day':
+        return 1440;
       case 'custom':
         const customMinutes = formData.get('customMinutes');
-        return customMinutes ? parseInt(customMinutes as string, 10) : undefined;
+        return customMinutes
+          ? parseInt(customMinutes as string, 10)
+          : undefined;
       default:
         return undefined;
     }
@@ -426,22 +454,22 @@ export class TaskForm extends HTMLElement {
 
   private setupTagListeners() {
     this.shadowRoot!.querySelectorAll('.tag-item').forEach(tag => {
-      tag.addEventListener('click', (e) => {
+      tag.addEventListener('click', e => {
         const tagId = (e.currentTarget as HTMLElement).dataset.tagId;
         if (!tagId) return;
-        
+
         const index = this.selectedTagIds.indexOf(tagId);
         if (index === -1) {
           this.selectedTagIds.push(tagId);
         } else {
           this.selectedTagIds.splice(index, 1);
         }
-        
+
         this.renderTags();
         const event = new CustomEvent('tagsChange', {
           detail: { selectedTags: this.selectedTagIds },
           bubbles: true,
-          composed: true 
+          composed: true,
         });
         this.dispatchEvent(event);
       });
@@ -450,16 +478,20 @@ export class TaskForm extends HTMLElement {
 
   public setFormData(todo: Partial<Todo>) {
     if (!this.form) return;
-    
+
     this.currentTodoId = todo.id || null;
     const titleInput = this.form.querySelector('#title') as HTMLInputElement;
     titleInput.value = todo.title || '';
-    
-    const descriptionInput = this.form.querySelector('#description') as HTMLTextAreaElement;
-    const dueDateInput = this.form.querySelector('#dueDate') as HTMLInputElement;
-    
+
+    const descriptionInput = this.form.querySelector(
+      '#description'
+    ) as HTMLTextAreaElement;
+    const dueDateInput = this.form.querySelector(
+      '#dueDate'
+    ) as HTMLInputElement;
+
     if (todo.description) descriptionInput.value = todo.description;
-    
+
     // 安全地处理dueDate
     if (todo.dueDate !== undefined && todo.dueDate !== null) {
       const date = new Date(todo.dueDate);
@@ -468,21 +500,25 @@ export class TaskForm extends HTMLElement {
       const day = String(date.getDate()).padStart(2, '0');
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
-      
+
       const dateTimeStr = `${year}-${month}-${day}T${hours}:${minutes}`;
       dueDateInput.value = dateTimeStr;
     } else {
       dueDateInput.value = '';
     }
-    
+
     if (todo.tags) {
       this.selectedTagIds = [...todo.tags];
       this.renderTags();
     }
-    
-    const reminderSelect = this.form.querySelector('#reminderTime') as HTMLSelectElement;
-    const customReminderInput = this.form.querySelector('input[name="customMinutes"]') as HTMLInputElement;
-    
+
+    const reminderSelect = this.form.querySelector(
+      '#reminderTime'
+    ) as HTMLSelectElement;
+    const customReminderInput = this.form.querySelector(
+      'input[name="customMinutes"]'
+    ) as HTMLInputElement;
+
     if (todo.reminderLeadTime !== undefined) {
       const standardTimes = [0, 15, 30, 60, 120, 1440];
       if (standardTimes.includes(todo.reminderLeadTime)) {
@@ -490,15 +526,25 @@ export class TaskForm extends HTMLElement {
       } else {
         reminderSelect.value = 'custom';
         customReminderInput.value = todo.reminderLeadTime.toString();
-        this.shadowRoot?.querySelector('#customReminderInput')?.setAttribute('style', 'display: block');
+        this.shadowRoot
+          ?.querySelector('#customReminderInput')
+          ?.setAttribute('style', 'display: block');
       }
     }
-    
-    const formTitle = this.shadowRoot!.querySelector('.form-title') as HTMLHeadingElement;
-    const submitBtn = this.form.querySelector('.submit-btn') as HTMLButtonElement;
-    
-    formTitle.textContent = this.currentTodoId ? this.i18n.t('todo.edit') : this.i18n.t('todo.add');
-    submitBtn.textContent = this.currentTodoId ? this.i18n.t('todo.save') : this.i18n.t('todo.add');
+
+    const formTitle = this.shadowRoot!.querySelector(
+      '.form-title'
+    ) as HTMLHeadingElement;
+    const submitBtn = this.form.querySelector(
+      '.submit-btn'
+    ) as HTMLButtonElement;
+
+    formTitle.textContent = this.currentTodoId
+      ? this.i18n.t('todo.edit')
+      : this.i18n.t('todo.add');
+    submitBtn.textContent = this.currentTodoId
+      ? this.i18n.t('todo.save')
+      : this.i18n.t('todo.add');
   }
 
   public reset() {
@@ -506,7 +552,9 @@ export class TaskForm extends HTMLElement {
     this.form.reset();
     this.selectedTagIds = [];
     this.currentTodoId = null; // 重置任务 ID
-    const submitBtn = this.form.querySelector('.submit-btn') as HTMLButtonElement;
+    const submitBtn = this.form.querySelector(
+      '.submit-btn'
+    ) as HTMLButtonElement;
     submitBtn.textContent = '添加';
     this.renderTags();
   }

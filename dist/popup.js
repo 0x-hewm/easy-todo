@@ -1236,7 +1236,7 @@ class TaskForm extends HTMLElement {
                 }
             }
             // 确保选中提醒时间时，截止日期也已设置
-            let reminderLeadTime = this.getReminderTime(formData);
+            const reminderLeadTime = this.getReminderTime(formData);
             if (reminderLeadTime !== undefined && dueDateTimestamp === undefined) {
                 alert('设置提醒时必须设置截止时间');
                 return;
